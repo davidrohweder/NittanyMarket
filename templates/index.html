@@ -6,14 +6,14 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
           <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}" />
-          <title>NUH - Home</title>
+          <title>NM - Home</title>
 
 </head>
 
 <!-- DEFAULT NAV -->
 <nav>
     <ul>
-        <li><a href="/patientportal">Patient Portal</a></li>
+        <li><a href="/login">Login</a></li>
         <li><a href="/">Home</a></li>
     </ul>
 </nav>
@@ -22,14 +22,35 @@
 
     <!-- Default intro banner -->
     <div class="banner">
-        <h1>Nittany University Hospital Hompage</h1>
+        <h1>Nittany Market Hompage</h1>
     </div>
 
     <!-- Simple introduction -->
     <div class="information">
-        <h3>Welcome to the Nittany University Hospital homepage.</h3> 
-        <p>For employees please refrence the Patient Portal to add or delete patients.</p> 
+        <h3>Welcome to the Nittany Market homepage.</h3> 
+        <p>Please login or create an account.</p>  
     </div>
+
+
+    <div class="card-body">
+        <h2 class="card-title">Users demo:</h2>
+        <table class="table table-dark">
+            <tr>
+                <th scope="col">Email</th>
+                <th scope="col">Password</th>
+            </tr>
+            <tbody>
+            {% for email, password in result %}
+                <tr>
+                    <td> {{ email }} </td>
+                    <td> {{ password }} </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
 
     <!-- Modal scripts -->
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
