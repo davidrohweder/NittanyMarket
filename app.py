@@ -5,6 +5,7 @@ from flask import Flask, redirect, render_template, request
 import sqlite3 as sql
 import csv
 import hashlib
+import random
 
 app = Flask(__name__)
 
@@ -60,11 +61,14 @@ def initDB():
 
     # Users
     cursor.execute('CREATE TABLE IF NOT EXISTS Users(email TEXT NOT NULL PRIMARY KEY, password TEXT NOT NULL);')
-    file = open('data/Users.csv')
-    contents = csv.reader(file)
-    next(contents)
     insert_records = "INSERT INTO Users(email, password) VALUES(?, ?)"
-    cursor.executemany(insert_records, contents)
+
+    with open('data/Users.csv') as file:
+        contents = csv.reader(file)
+        next(contents) # skip header row
+        
+        params = [(row[0], hashlib.sha256(row[1].encode()).hexdigest()) for row in contents]
+        cursor.executemany(insert_records, params)
 
     # Buyers
     connection.execute('CREATE TABLE IF NOT EXISTS Buyers(email TEXT NOT NULL PRIMARY KEY, first_name TEXT NOT NULL, last_name TEXT NOT NULL, gender TEXT NOT NULL, age INT NOT NULL, home_address_id INT NOT NULL, billing_address_id INT NOT NULL, FOREIGN KEY (email) REFERENCES Users (email) );')
@@ -99,7 +103,7 @@ def initDB():
     cursor.executemany(insert_records, contents)   
 
     # Address
-    connection.execute('CREATE TABLE IF NOT EXISTS Address(address_id INT NOT NULL PRIMARY KEY, zipcode INT NOT NULL, street_num INT NOT NULL, street_name TEXT NOT NULL, FOREIGN KEY (zipcode) REFERENCES Zipcode_Info (zipcode) );')
+    connection.execute('CREATE TABLE IF NOT EXISTS Address(address_id TEXT NOT NULL PRIMARY KEY, zipcode INT NOT NULL, street_num INT NOT NULL, street_name TEXT NOT NULL, FOREIGN KEY (zipcode) REFERENCES Zipcode_Info (zipcode) );')
     file = open('data/Address.csv')
     contents = csv.reader(file)
     next(contents)
@@ -168,7 +172,8 @@ def login():
 
         # hash sent password
         password = request.form['Password']
-        #password = hashlib.md5(password.encode())
+        
+        password = hashlib.sha256(password.encode()).hexdigest()
 
         # give user seller rights if they are an approved seller
         sellerResult = isseller_request(request.form['EmailAddress'], password)
@@ -210,14 +215,22 @@ def create_account():
     error = ""    
 
     if request.method == 'POST':
-
+        return render_template('create_account.html', error=error)
         # Data validation
 
-        email = request.form['Email'] # todo add format validation like @xxx.xxx
+        email = request.form['EmailAddress'] # todo add format validation like @xxx.xxx
 
         password = request.form['Password']
         r_password = request.form['repeat_Password']
 
+        #password = hashlib.sha256(password.encode()).hexdigest()
+
+        #if (password == r_password):
+        #    #password = hashlib.sha256(password.encode()).hexdigest()
+        #    password = 'aaa'
+        #else:
+        #   error = 'Error: Form passwords do not match.'
+        #    return render_template('create_account.html', error=error)
 
         firstname = request.form['FirstName']
         lastname = request.form['LastName']
@@ -228,28 +241,30 @@ def create_account():
 
         # create billing and home address
 
-
-        address_id = ""
-        addrHome = createaddress(address_id, request.form['Zipcode'], request.form['street_num'], request.form['street_name'])
-        addrBill = addrHome
+        #hash = random.getrandbits(128)
+        address_id = 'billy'
+        addrBill = address_id
+        addrHome = address_id
+        createaddress(address_id, request.form['ZipCode'], request.form['StreetNumber'], request.form['StreetName'])
         
         # for now home addr = bill addr untill a same as checkbox is implemented
         #addrBill = createaddress(request.form['Zipcode'], request.form['street_num'], request.form['street_name'])
 
         createaccount_request(email, password, firstname, lastname, gender, age, addrHome, addrBill)
-        redirect('/login')
+        #return redirect('/login')
     return render_template('create_account.html', error=error)
 
 
 def createaddress(address_id, zipcode, street_num, street_name):
     connection = sql.connect('database.db')
-    connection.execute('insert_records = "INSERT INTO Address(address_id, password) VALUES(?, ?, ?, ?)', (address_id, zipcode, street_num, street_name))
+    connection.execute('INSERT INTO Address(address_id, zipcode, street_num, street_name) VALUES(?, ?, ?, ?)', (address_id, zipcode, street_num, street_name))
     connection.commit()
 
 
 def createaccount_request(email, password, first_name, last_name, gender, age, homeaddr, billaddr):
     connection = sql.connect('database.db')
-    connection.execute('insert_records = "INSERT INTO Users(email, password) VALUES(?, ?, ?, ?, ?, ?, ?)', (email, password, first_name, last_name, gender, age, homeaddr, billaddr))
+    connection.execute('INSERT INTO Users(email, password ) VALUES(?, ?)', (email, password) )
+    connection.execute('INSERT INTO Buyers(email, first_name, last_name, gender, age, home_address_id, billing_address_id) VALUES(?, ?, ?, ?, ?, ?, ?)', (email, first_name, last_name, gender, age, homeaddr, billaddr))
     connection.commit()
 
 
