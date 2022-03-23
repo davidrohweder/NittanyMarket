@@ -215,7 +215,7 @@ def create_account():
     error = ""    
 
     if request.method == 'POST':
-        return render_template('create_account.html', error=error)
+        
         # Data validation
 
         email = request.form['EmailAddress'] # todo add format validation like @xxx.xxx
@@ -223,7 +223,7 @@ def create_account():
         password = request.form['Password']
         r_password = request.form['repeat_Password']
 
-        #password = hashlib.sha256(password.encode()).hexdigest()
+        password = hashlib.sha256(password.encode()).hexdigest()
 
         #if (password == r_password):
         #    #password = hashlib.sha256(password.encode()).hexdigest()
@@ -251,7 +251,7 @@ def create_account():
         #addrBill = createaddress(request.form['Zipcode'], request.form['street_num'], request.form['street_name'])
 
         createaccount_request(email, password, firstname, lastname, gender, age, addrHome, addrBill)
-        #return redirect('/login')
+        return redirect('/login')
     return render_template('create_account.html', error=error)
 
 
