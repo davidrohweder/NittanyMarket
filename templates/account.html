@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+              integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link rel="shortcut icon" href="/favicon.ico">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.3/css/bootstrap.min.css" integrity="sha512-oc9+XSs1H243/FRN9Rw62Fn8EtxjEYWHXRvjS43YtueEewbS6ObfXcJNyohjHqVKFPoXXUxwc+q1K7Dee6vv9g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <title>NM - Login</title>
+    </head>
+
+    <body>
+
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="#">{{config['SITE_TITLE']}}</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+  
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+              <ul class="navbar-nav mr-auto">
+                
+               {% for item in navbar %}
+                  {% if item.sublinks %}
+                    <li class="nav-item dropdown">
+                      <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        {{item.text}}
+                      </a>
+  
+                      <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+  
+                          {% for sublink in item.sublinks %}
+                                <a class='dropdown-item' href="{{sublink.url}}">{{sublink.text}}</a>
+                          {% endfor %}
+                      </div>
+                    </li>
+  
+                {% elif item.url %}
+                    <li class="nav-item">
+                      <a class="nav-link" href="{{item.url}}">{{item.text}}</a>
+                    </li>
+                {% endif %}
+                {% endfor %}
+                </ul>
+  
+            </div>
+          </nav>
+
+        <div class="card-body">
+            <h2 class="card-title">Account Information</h2>
+            <table class="table table-dark">
+                <tr>
+                    <th scope="col">Email</th>
+                    <th scope="col">First Name</th>
+                    <th scope="col">Last Name</th>
+                    <th scope="col">Age</th>
+                    <th scope="col">Gender</th>
+                </tr>
+                <tbody>
+                {% for email, first_name, last_name, age, gender in personal %}
+                    <tr>
+                        <td> {{ email }} </td>
+                        <td> {{ first_name }} </td>
+                        <td> {{ last_name }} </td>
+                        <td> {{ age }} </td>                    
+                        <td> {{ gender }} </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card-body">
+            <h2 class="card-title">Billing Address</h2>
+            <table class="table table-dark">
+                <tr>
+                    <th scope="col">Street</th>
+                    <th scope="col">Address</th>
+                    <th scope="col">City</th>
+                    <th scope="col">State</th>
+                    <th scope="col">Zip</th>
+                </tr>
+                <tbody>
+                {% for street_name, street_num, city, state_id, zipcode in billing %}
+                    <tr>
+                        <td> {{ street_name }} </td>
+                        <td> {{ street_num }} </td>
+                        <td> {{ city }} </td>
+                        <td> {{ state_id }} </td>                    
+                        <td> {{ zipcode }} </td>          
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card-body">
+            <h2 class="card-title">Home Address</h2>
+            <table class="table table-dark">
+                <tr>
+                    <th scope="col">Street</th>
+                    <th scope="col">Address</th>
+                    <th scope="col">City</th>
+                    <th scope="col">State</th>
+                    <th scope="col">Zip</th>
+                </tr>
+                <tbody>
+                {% for street_name, street_num, city, state_id, zipcode in home %}
+                    <tr>
+                        <td> {{ street_name }} </td>
+                        <td> {{ street_num }} </td>
+                        <td> {{ city }} </td>
+                        <td> {{ state_id }} </td>                    
+                        <td> {{ zipcode }} </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card-body">
+            <h2 class="card-title">Card Number</h2>
+            <table class="table table-dark">
+                <tr>
+                    <th scope="col">Card Number</th>
+                </tr>
+                <tbody>
+                {% for card_num in payments %}
+                    <tr>
+                        <td> XXXX-XXXX-XXXX-{{ card_num }} </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.3/js/bootstrap.bundle.min.js" integrity="sha512-iceXjjbmB2rwoX93Ka6HAHP+B76IY1z0o3h+N1PeDtRSsyeetU3/0QKJqGyPJcX63zysNehggFwMC/bi7dvMig==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    </body>
+
+</html>
