@@ -1,97 +1,125 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}" />
-    <title>NM - Create Account</title>
-</head>
-      
-<!-- DEFAULT NAV -->
-<nav>
-    <ul>
-        <li><a href="/login">Login</a></li>
-        <li><a href="/">Home</a></li>
-    </ul>
-</nav>
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+              integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link rel="shortcut icon" href="/favicon.ico">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.3/css/bootstrap.min.css" integrity="sha512-oc9+XSs1H243/FRN9Rw62Fn8EtxjEYWHXRvjS43YtueEewbS6ObfXcJNyohjHqVKFPoXXUxwc+q1K7Dee6vv9g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <title>NM - {{ product[3] }}</title>
+    </head>
+
+	<body>
+
+		<nav class="navbar navbar-expand-lg navbar-light bg-light">
+		  <a class="navbar-brand" href="#">{{config['SITE_TITLE']}}</a>
+		  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+		    <span class="navbar-toggler-icon"></span>
+		  </button>
+
+		  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+		    <ul class="navbar-nav mr-auto">
+		      
+             {% for item in navbar %}
+				{% if item.sublinks %}
+			      <li class="nav-item dropdown">
+			        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			          {{item.text}}
+			        </a>
+
+			        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+
+						{% for sublink in item.sublinks %}
+					          <a class='dropdown-item' href="{{sublink.url}}">{{sublink.text}}</a>
+					    {% endfor %}
+			        </div>
+			      </li>
+
+			  {% elif item.url %}
+			      <li class="nav-item">
+			        <a class="nav-link" href="{{item.url}}">{{item.text}}</a>
+			      </li>
+		      {% endif %}
+		      {% endfor %}
+		      </ul>
+
+		  </div>
+		  <li>Search</li>
+		</nav>
+
+		<div class="container">
  
-<body>
+			<div class="left-column">
+				<img src="{{url_for('static', filename='images/product-image.jpg')}}"/>
+			</div>
+		   
+		   
+			<!-- Right Column -->
+			<div class="right-column">
+		   
+			  <!-- Product Description -->
+			  <div class="product-description">
+				<span>{{ product[2] }}</span>
+				<h1>{{ product[3] }}</h1>
+			  </div>
 
-    <!-- ********** Block for container ********** -->
-    <div class="container-sm">
-    
-        <!-- Block for form input-->
-        <div class="card-body">
-            <h2 class="card-title">Enter Login Information</h2>
-    
-            <form action="/create_account" method="POST">
-                <div class="form-group">
-                    <label id="EmailAddress">Email Address</label>
-                    <input type="text" name="EmailAddress" required class="form-control">
-                </div>
-                <div class="form-group">
-                    <label id="Password">Password</label>
-                    <input type="password" name="Password" required class="form-control">
-                </div>
-                <div class="form-group"> 
-                    <label id="repeat_Password">Repeat Password</label>
-                    <input type="password" name="repeat_Password" required class="form-control">
-                </div>
-                <div class="form-group">
-                    <label id="FirstName">First Name</label>
-                    <input type="text" name="FirstName" required class="form-control">
-                </div>
-                <div class="form-group">
-                    <label id="LastName">Last Name</label>
-                    <input type="text" name="LastName" required class="form-control">
-                </div>
-                <div class="form-group">
-                    <label id="Gender">Gender</label>
-                    <input type="text" name="Gender" required class="form-control">
-                </div>
-                <div class="form-group">
-                    <label id="Age">Age</label>
-                    <input type="text" name="Age" required class="form-control">
-                </div>
+				<!-- Product Pricing -->
+				<div class="product-price">
+					<form action="/cart" method="POST">
 
-                <h3 class="card-title">Billing Address and Home Address (Temp)</h3>
+						<span>Price {{ product[6] }}, Quanity: </span>
+			  
+			  			<select name="SelectedQuanity">
+							{% for i in range(1, len) %}
+							<option value={{i}}>{{ i }}</option>
+							{% endfor %}
+						</select>
 
-                <div class="form-group">
-                    <label id="ZipCode">Zip Code</label>
-                    <input type="text" name="ZipCode" required class="form-control">
-                </div>
-                <div class="form-group">
-                    <label id="StreetNumber">Street Number</label>
-                    <input type="text" name="StreetNumber" required class="form-control">
-                </div>
-                <div class="form-group">
-                    <label id="StreetName">Street Name</label>
-                    <input type="text" name="StreetName" required class="form-control">
-                </div>
-     
-                <button type="submit" class="btn btn-primary">Create Account</button>
-                <a class="btn btn-success" href="/login" role="button">Login</a>            
-                <br><br>
-                <label id="Error"> {{ error }} </label>
-            
-            </form>
-        </div>
-        <!-- End block form input -->
+					<input type="hidden" name="ProductMax" value="{{ product[7] }}">
+					<input type="hidden" name="SellerEmail" value="{{ product[0] }}">
+					<input type="hidden" name="ProductsPrice" value="{{ product[6] }}">
+					<input type="hidden" name="ListingID-1" value="{{ product[1] }}">
+					<button type="submit" class="cart-btn">Add to Cart</button>
+				</form>
+			</div>
 
+			
+			</div>
+		</div>	
 
-    <!-- Modal Scripts -->
-    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
-            integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
-            crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-            integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-            crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-            integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
-            crossorigin="anonymous"></script>
+		<div class="container" style="height:100px !important">
 
-</body>
+			<div class="left-column">
+				<!-- Product Description -->
+			    <div class="product-description">
+					<span>Seller Information: {{ product[0] }}, Rating: {{ sellerinfo[0] }}</span>
+					<p>Product Description: {{ product[5] }}</p>
+		   		</div>			
+			</div>
+			
+		</div>
 
+		<div class="container" style="height:100px !important">
+
+			<div class="left-column">
+				<!-- Product Description -->
+			    <div class="product-description">
+					<h1>Product Reviews</h1>
+		   		</div>
+				
+				{% for review in reviews %}
+					<p class="line">Buyer: {{ review[0] }}, had this to say: {{ review[3] }}</p>
+				{% endfor %}
+			
+			</div>
+			
+		</div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.3/js/bootstrap.bundle.min.js" integrity="sha512-iceXjjbmB2rwoX93Ka6HAHP+B76IY1z0o3h+N1PeDtRSsyeetU3/0QKJqGyPJcX63zysNehggFwMC/bi7dvMig==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    </body>
 </html>

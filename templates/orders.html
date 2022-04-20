@@ -9,10 +9,10 @@
         <link rel="shortcut icon" href="/favicon.ico">
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.3/css/bootstrap.min.css" integrity="sha512-oc9+XSs1H243/FRN9Rw62Fn8EtxjEYWHXRvjS43YtueEewbS6ObfXcJNyohjHqVKFPoXXUxwc+q1K7Dee6vv9g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-        <title>NM - Home</title>
+        <title>NM - Cart</title>
     </head>
 
-	<body>
+	<body class="cartbody">
 
 		<nav class="navbar navbar-expand-lg navbar-light bg-light">
 		  <a class="navbar-brand" href="#">{{config['SITE_TITLE']}}</a>
@@ -50,28 +50,39 @@
 		  <li>Search</li>
 		</nav>
 
-        <!-- Default intro banner -->
-        <div class="banner">
-            <h1>Nittany Market</h1>
-        </div>
+		<div class="cart-container">
+			<div class="cart-header">
+				<h3 class="cart-heading">Recent Orders</h3>
+			</div>
+  
+			{% for item in orders %}
+			<div class="cart-items">
 
-        <!-- Product Grid -->
-		<div class="products-grid">
-			{% for product in products %}
-			<form action="/product" method="POST" class="product">
-				<input type="hidden" name="SellerEmail-1" value="{{ product[0] }}">
-				<input type="hidden" name="ListingID" value="{{ product[1] }}">
-				<button type="submit">
-					<p class="line">{{ product[4] }}</p>
-					<p class="line">Description: {{ product[5] }}</p>
-					<p class="line">Price: {{ product[6] }}</p>
-				</button>
-			</form>
+				<div class="cart-about">
+					<h1 class="cart-title">title when join works</h1>
+					<h3 class="cart-subtitle">desc when join works</h3>
+				</div>
+
+				<div class="cart-counter">
+					<div class="cart-count">Item Quanity: {{ item[5] }}</div>
+				</div>
+
+				<div class="cart-prices">
+					<div class="cart-amount">Item Total: {{ item[6] }}</div>
+					<form action="/reviewproduct" method="POST">						
+						<input type="hidden" name="TransactionID" value="{{ item[0] }}">
+						<button type="submit" href="/reviewproduct" class="cart-remove" style="border: 0px !important;"><u>Review Product</u></button>
+					</form>
+					<form action="/rateseller" method="POST">						
+						<input type="hidden" name="TransactionID" value="{{ item[0] }}">
+						<button type="submit" href="/rateseller" class="cart-remove" style="border: 0px !important;"><u>Rate Seller</u></button>
+					</form>		
+				  </div>
+			</div>
 			{% endfor %}
-		</div>
 
+		<hr> 
 
-        
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 	    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.3/js/bootstrap.bundle.min.js" integrity="sha512-iceXjjbmB2rwoX93Ka6HAHP+B76IY1z0o3h+N1PeDtRSsyeetU3/0QKJqGyPJcX63zysNehggFwMC/bi7dvMig==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
