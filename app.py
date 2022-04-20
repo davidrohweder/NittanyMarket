@@ -454,7 +454,8 @@ def product():
 def productReview_request(email, listingID):
     connection = sql.connect('database.db')
     cursor = connection.execute('SELECT * FROM Reviews WHERE Reviews.listing_id = ''?'' AND Reviews.seller_email = ''?'';', (listingID, email))
-    return cursor.fetchmany() 
+    return cursor.fetchall()
+
 
 def sellerinfo_request(email):
     connection = sql.connect('database.db')
@@ -481,10 +482,13 @@ def publishproduct():
         productprice = request.form['ProductPrice']
         productquanity = request.form['ProductQuanity']
         productcategory = request.form['ProductCategory']
-
-        publishproduct(session.returnUserID(), producttitle, productname, productdescription, productprice, productquanity, productcategory)
-        product = newProduct_request()
-        return redirect('/product', product=product)
+        listing_id = findMaxListingID_request()
+        max_listing = int(listing_id[0]) + 1
+        newProduct_request(session.returnUserID(), max_listing, producttitle, productname, productdescription, productprice, productquanity, productcategory)
+        product = selectedProduct_request(session.returnUserID(), max_listing)
+        sellerinfo = sellerinfo_request(session.returnUserID())
+        reviews = productReview_request(session.returnUserID(), max_listing)
+        return render_template('product.html', product=product, len=product[7] + 1, sellerinfo=sellerinfo, reviews=reviews)  
 
     if session.returnIsSeller() == 1:
         categories = categoryType_request()
@@ -493,18 +497,18 @@ def publishproduct():
     return redirect('/')
 
 
-def newProduct_request(email, title, name, desc, price, quanity, category):
+def findMaxListingID_request():
     connection = sql.connect('database.db')
-    connection.execute("INSERT INTO Product_Listings(seller_email, listing_id, category, title, product_name, product_description, price, quanity, active, posted, ended) VALUES(?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'), NULL)", (email, title, name, desc, price, quanity, category))
+    cursor = connection.execute('SELECT max(Product_Listings.listing_id) FROM Product_Listings WHERE Product_Listings.seller_email = ''?'';', (session.returnUserID(), ))
+    return cursor.fetchone()     
+
+
+def newProduct_request(email, listing_id, title, name, desc, price, quanity, category):
+    connection = sql.connect('database.db')
+    connection.execute("INSERT INTO Product_Listings(seller_email, listing_id, category, title, product_name, product_description, price, quanity, active, posted, ended) VALUES(?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'), NULL)", (email, listing_id, category, title, name, desc, price, quanity))
     connection.commit()
     connection.close() 
-
-
-def publishProduct_request():
-    connection = sql.connect('database.db')
-    cursor = connection.execute('SELECT Categories.category_name FROM Categories')
-    return cursor.fetchall()  
-
+   
 
 def categoryType_request():
     connection = sql.connect('database.db')
@@ -593,8 +597,7 @@ def addToCart_request(buyer, seller, listing_id, orderdate, quanity, total):
 
 def unfinishedOrders_request(buyer_email):
     connection = sql.connect('database.db')
-    # cursor = connection.execute('SELECT * FROM Orders LEFT JOIN Product_Listings ON Orders.buyer_email = ''?'' AND Orders.cart = 1 AND Orders.listing_id = Product_Listings.listing_id AND Product_Listings.seller_email = Orders.seller_email;', (buyer_email, ))
-    cursor = connection.execute('SELECT * FROM Orders WHERE Orders.buyer_email = ''?'' AND Orders.cart = 1 AND Orders.cancelled = 0;', (buyer_email, ))
+    cursor = connection.execute('SELECT * FROM Orders INNER JOIN Product_Listings ON Orders.buyer_email = ''?'' AND Orders.cart = 1 AND Orders.cancelled = 0 AND Orders.listing_id = Product_Listings.listing_id AND Product_Listings.seller_email = Orders.seller_email;', (buyer_email, ))
     return cursor.fetchall()   
 
 
@@ -709,8 +712,9 @@ def orders():
 
 def finishedOrders_request():
     connection = sql.connect('database.db')
-    cursor = connection.execute('SELECT * FROM Orders WHERE Orders.buyer_email = ''?'' AND Orders.cart = 0 AND Orders.cancelled = 0 ORDER BY date(date,"yyyy-mm-dd") DESC;', (session.returnUserID(),))
+    cursor = connection.execute('SELECT * FROM Orders INNER JOIN Product_Listings ON Orders.buyer_email = ''?'' AND Orders.cart = 0 AND Orders.cancelled = 0 AND Orders.listing_id = Product_Listings.listing_id AND Product_Listings.seller_email = Orders.seller_email;', (session.returnUserID(), ))
     return cursor.fetchall()       
+    
 
 
 @app.route('/rateseller', methods=['GET', 'POST'])
@@ -729,27 +733,46 @@ def ratesellerhandle():
     if session.returnIsBuyer() == 0:
         return redirect('/')
 
-    ratingDesc = ['Awesome', 'Not Bad', 'Bad']
-    
     if request.method == 'POST':
         transaction_id = request.form['TransactionID']
-        
+        info = transactionSeller_request(transaction_id)
         today = date.today()
         today = today.strftime("%m/%d/%y")
-        info = transactionSeller_request(transaction_id)
-        seller = info[0]
-        rateSeller_request()
+        ratedToday = ratedToday_request(info[0], info[1], today)
+
+        if not ratedToday:
+            ratingDesc = ['Awesome', 'Not Bad', 'Bad']
+            rating = int(request.form['SellerRating'])
+            rating_desc = "NULL"
+
+            if rating == 5 | rating == 4:
+                rating_desc = ratingDesc[0]
+            elif rating == 2 | rating == 3:
+                rating_desc = ratingDesc[1]
+            else:
+                rating_desc = ratingDesc[2]
+
+            rateSeller_request(info[0], info[1], today, rating, rating_desc)
+    
+    orders = finishedOrders_request()
+    return render_template('orders.html', orders=orders)
+
+
+def ratedToday_request(buyer, seller, date):
+    connection = sql.connect('database.db')
+    cursor = connection.execute('SELECT * FROM Ratings WHERE Ratings.buyer_email = ''?'' AND Ratings.seller_email = ''?'' AND Ratings.date = ''?'';', (buyer, seller, date))
+    return cursor.fetchone()      
 
 
 def transactionSeller_request(transaction_id):
     connection = sql.connect('database.db')
-    cursor = connection.execute('SELECT Orders.seller_email, Orders.listing_id FROM Orders WHERE AND Orders.transaction_id = ''?'';', (transaction_id,))
+    cursor = connection.execute('SELECT Orders.buyer_email, Orders.seller_email, Orders.listing_id FROM Orders WHERE Orders.transaction_id = ''?'';', (transaction_id,))
     return cursor.fetchone()     
 
 
 def rateSeller_request(buyer_email, seller_email, date, rating, rating_desc):
     connection = sql.connect('database.db')
-    connection.execute('INSERT INTO Ratings(buyer_email, seller_email, date, rating, rating_desc) VALUES(?, ?, ?, ?)', (buyer_email, seller_email, date, rating, rating_desc))
+    connection.execute('INSERT INTO Ratings(buyer_email, seller_email, date, rating, rating_desc) VALUES(?, ?, ?, ?, ?)', (buyer_email, seller_email, date, rating, rating_desc))
     connection.commit()
     connection.close()
 
@@ -771,31 +794,30 @@ def reviewproducthandle():
         return redirect('/')
 
     if request.method == 'POST':
-
         transaction_id = request.form['TransactionID']
-        reviewedBefore = transactionSeller_request(transaction_id)
-
-        if reviewedBefore:
-            info = transactionSeller_request(transaction_id)
-            seller = info[0]
-            print(seller)
-            listingID = info[1]
-            print(listingID)
+        info = transactionSeller_request(transaction_id)
+        reviewedBefore = findPreviousReview_request(info[0], info[1], info[2])
+        
+        if not reviewedBefore:
+            buyer = info[0]
+            seller = info[1]
+            listingID = info[2]
             review = request.form['ProductReview']
-            reviewProduct_request(session.returnUserID(), seller, listingID, review)
+            reviewProduct_request(buyer, seller, listingID, review)
     
     orders = finishedOrders_request()
     return render_template('orders.html', orders=orders)
 
-def findPreviousReview_request(transaction_id, ):
+
+def findPreviousReview_request(buyer, seller, listing_id):
     connection = sql.connect('database.db')
-    cursor = connection.execute('SELECT * FROM Reviews LEFT JOIN Orders ON Orders.transaction_id = ''?'' AND Orders.buyer_email = Reviews.buyer_email AND Orders.seller_email = Reviews.seller_email AND Orders.listing_id = Reviews.listing_id;', (transaction_id,))
+    cursor = connection.execute('SELECT * FROM Reviews WHERE Reviews.buyer_email = ''?'' AND Reviews.seller_email = ''?'' AND Reviews.listing_id = ''?'';', (buyer, seller, listing_id))
     return cursor.fetchone()     
 
 
 def reviewProduct_request(buyer_email, seller_email, listing_id, review_desc):
     connection = sql.connect('database.db')
-    connection.execute('INSERT INTO Ratings(buyer_email, seller_email, date, rating, rating_desc) VALUES(?, ?, ?, ?)', (buyer_email, seller_email, listing_id, review_desc))
+    connection.execute('INSERT INTO Reviews(buyer_email, seller_email, listing_id, review_desc) VALUES(?, ?, ?, ?)', (buyer_email, seller_email, listing_id, review_desc))
     connection.commit()
     connection.close()
 
