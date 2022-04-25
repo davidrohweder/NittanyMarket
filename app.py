@@ -997,7 +997,10 @@ def search():
         if not userQuery:
             return redirect('/')
 
-        products = search_request(userQuery)
+        products = search_request('%'+userQuery+'%')
+
+        if not products:
+            products = homeProductListing()
 
         categories = categoriesHierarchy()
         catnav = generateNav(categories)
@@ -1011,10 +1014,6 @@ def search_request(sequence):
     cursor = connection.execute('SELECT * FROM Product_Listings WHERE Product_Listings.product_name LIKE ''?'' OR Product_Listings.title LIKE ''?'';', (sequence,sequence))
     return cursor.fetchall()
 
-
-@app.route('/advancedsearch', methods=['GET', 'POST'])
-def advancedsearch(): 
-    return redirect('/')
 
 # default instructions
 if __name__ == "__main__":

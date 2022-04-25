@@ -14,41 +14,46 @@
 
 	<body>
 
+		<!-- Main Nav Bar Links Region -->
 		<nav class="navbar navbar-expand-lg navbar-light bg-light">
-		  <a class="navbar-brand" href="#">{{config['SITE_TITLE']}}</a>
-		  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-		    <span class="navbar-toggler-icon"></span>
-		  </button>
+			<a class="navbar-brand" href="#">{{config['SITE_TITLE']}}</a>
+			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+		    	<span class="navbar-toggler-icon"></span>
+		  	</button>
 
-		  <div class="collapse navbar-collapse" id="navbarSupportedContent">
-		    <ul class="navbar-nav mr-auto">
-		      
-             {% for item in navbar %}
+		  	<div class="collapse navbar-collapse" id="navbarSupportedContent">
+		    	<ul class="navbar-nav mr-auto">
+				
+				<!-- If nav dict has item sublink create menu obj otherwise create obj with url for link -->
+             	{% for item in navbar %}
 				{% if item.sublinks %}
-			      <li class="nav-item dropdown">
-			        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-			          {{item.text}}
-			        </a>
+			      	<li class="nav-item dropdown">
+			        	<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				          	{{item.text}}
+			        	</a>
 
-			        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-
+			        	<div class="dropdown-menu" aria-labelledby="navbarDropdown">
 						{% for sublink in item.sublinks %}
 					          <a class='dropdown-item' href="{{sublink.url}}">{{sublink.text}}</a>
 					    {% endfor %}
-			        </div>
-			      </li>
+			        	</div>
+			      	</li>
 
-			  {% elif item.url %}
-			      <li class="nav-item">
-			        <a class="nav-link" href="{{item.url}}">{{item.text}}</a>
-			      </li>
-		      {% endif %}
-		      {% endfor %} 
-		      </ul>
+			  		{% elif item.url %}
+			      	<li class="nav-item">
+			        	<a class="nav-link" href="{{item.url}}">{{item.text}}</a>
+			      	</li>
+		      		{% endif %}
+		      		{% endfor %}
 
-		  </div>
-		  
-		  <form action="/search" method="POST">						
+		      	</ul>
+		  	</div>
+			
+			<!-- Search Bar Form -->
+		  	<form action="/search" method="POST">
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+					<path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+				  </svg>						
 				<input type="text" name="search">
 				<button type="submit" class="btn btn-primary" style="background-color: orangered;">Search</button>
 			</form>
@@ -56,6 +61,7 @@
 
 		<div style="margin: 0px; padding: 0px; background-color: black; color: black; height: 2px !important; width: 100% important;"></div>
 
+		<!-- Categories Menu Nav Links -->
 		<div class="navbar navbar-expand-lg navbar-light bg-light">
 			<a class="navbar-brand" href="#">{{config['SITE_TITLE']}}</a>
 			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -65,6 +71,8 @@
 			<div class="collapse navbar-collapse" id="navbarSupportedContent">
 				<ul class="navbar-nav mr-auto">
 					
+					<!-- Count for every item in categories nav passed to index * Nested list format... ex: [A,[B,[C]]] A = level0, B = level1, C = level2* -->
+					<!-- Generate get request based off level0->2 count and query those items to index page -->
 					{% set level0_count = namespace(value=0) %}
 			   		{% for level0 in categories %}
 				   	<li class="nav-item dropdown" style="display: flex !important;">
@@ -75,9 +83,11 @@
 						
 					
 						<div class="dropdown-menu" aria-labelledby="navbarDropdown">
+						<!-- Element 0 is A -- [A,[B]] wrong we want to start at B -->
 						{% set level1_count = namespace(value=1) %}
 						{% for level1 in level0[1:] %}
 							
+							<!-- If category does not have children do not add dropdown toggle style -->
 							{% if level1|length == 1 %}
 							<a class="nav-link" href="/categoryquery?level0={{ level0_count.value }}&level1={{ level1_count.value }}" id="navbarDropdown" role="button"  aria-haspopup="true" aria-expanded="false">
 								{{level1[0]}}
@@ -88,13 +98,14 @@
 						  	</a>
 							{% endif %}
 
+							<!-- Element 0 is B -- [A,[B,[C]]] wrong we want to start at C -->
 							{% set level2_count = namespace(value=1) %}
 							{% for level2 in level1[1:] %}
 								<a class='dropdown-item' href="/categoryquery?level0={{ level0_count.value }}&level1={{ level1_count.value }}&level2={{ level2_count.value }}">{{level2[0]}}</a>
-							{% set level2_count.value = level2_count.value + 1 %}
+							{% set level2_count.value = level2_count.value + 1 %} <!-- Increment level 2 -->
 							{% endfor %}
 
-						{% set level1_count.value = level1_count.value + 1 %}
+						{% set level1_count.value = level1_count.value + 1 %} <!-- Increment level 1 -->
 						{% endfor %}
 						</div>
 						
