@@ -9,7 +9,7 @@
         <link rel="shortcut icon" href="/favicon.ico">
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.3/css/bootstrap.min.css" integrity="sha512-oc9+XSs1H243/FRN9Rw62Fn8EtxjEYWHXRvjS43YtueEewbS6ObfXcJNyohjHqVKFPoXXUxwc+q1K7Dee6vv9g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-        <title>NM - Review Product</title>
+        <title>NM - Checkout</title>
     </head>
 
 	<body>
@@ -54,28 +54,77 @@
 				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
 					<path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
 				  </svg>						
-				  <input type="text" name="search" placeholder="Search">
+                <input type="text" name="search" placeholder="Search">
 				<button type="submit" class="btn btn-primary" style="background-color: orangered;">Search</button>
 			</form>
 		</nav>
 
 		<div style="margin: 0px; padding: 0px; background-color: black; color: black; height: 2px !important; width: 100% important;"></div>
-
+        
         <!-- ********** Block for container ********** -->
         <div class="container-sm">
             <!-- Block for form input-->
             <div class="card-body">
-                <h2 class="card-title">Enter Product Information</h2>
-
-                    <form action="/reviewproducthandle" method="POST">
-                        <input type="hidden" name="TransactionID" value="{{ transaction_id }}">
+                <h2 class="card-title">Payment Methods</h2>
+                    <br>
+                    <form action="/checkout" method="POST">
+                        <h4 class="card-title">Use Existing Card</h4>
+                        {% if returned == "" %}
                         <div class="form-group">
-                            <label id="ProductReview">Product Review</label>
-                            <textarea name="ProductReview" required class="form-control"></textarea>
+                            <label id="ExpireYear">Cards On File</label>
+                            <select name="ExistingCardNumber" class="form-control">
+                                {% for card in cards %}
+                                <option value={{card[0]}}>{{ card[0] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label id="UseExisting">Use Existing Card</label>
+                            <label id="UseYes">Yes</label>
+                            <input type="radio" value="1" name="UseExistingYes">
+                        </div>
+                        {% elif returned == "NULL" %}
+                        No card on file
+                        <br>
+                        {% endif %}  
+                        <br> 
+                        <h4 class="card-title">Enter New Card</h4>
+                        <div class="form-group">
+                            <label id="CardNumber">Card Number</label>
+                            <input class="form-control" name="CardNumber" type="tel" inputmode="numeric" pattern="[0-9\s]{13,19}" autocomplete="cc-number" maxlength="19" placeholder="xxxx xxxx xxxx xxxx">
+                        </div>
+                        <div class="form-group">
+                            <label id="CardCode">Card Code</label>
+                            <input class="form-control" name="CardCode" type="tel" pattern="[0-9\s]{3,4}" autocomplete="cc-number" maxlength="4" placeholder="1234">
+                        </div>
+                        <div class="form-group">
+                            <label id="CardType">Select Card Type</label>
+                            <select name="CardType" class="form-control">
+                                <option value="Master">Master</option>
+                                <option value="Discover">Discover</option>
+                                <option value="Visa">Visa</option>
+                                <option value="American Express">American Express</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label id="ExpireMonth">Expire Month</label>
+                            <select name="ExpireMonth" class="form-control">
+                                {% for i in range(1, 13) %}
+                                <option value={{i}}>{{ i }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label id="ExpireYear">Expire Year</label>
+                            <select name="ExpireYear" class="form-control">
+                                {% for i in range(22, 27) %}
+                                <option value={{i}}>20{{ i }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                         
                         <br><br>
-                        <button type="submit" class="btn btn-primary">Submit Review</button>                    
+                        <button type="submit" class="btn btn-primary">Checkout</button>                    
                         <label id="Error"> {{ error }} </label>
                     
                     </form>

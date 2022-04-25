@@ -21,6 +21,11 @@ app = Flask(__name__)
 host = 'http://127.0.0.1:5000/'
 
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return redirect('/')
+
+
 @app.context_processor 
 def inject_dict_for_all_templates():
 
@@ -758,6 +763,49 @@ def updateOrdersCartCancellFull_request():
 
 @app.route('/checkout', methods=['GET', 'POST'])
 def checkout():
+
+    if session.returnIsBuyer() == 0:
+        return redirect('/')
+
+    if request.method == 'POST': # if post then sending over card info
+        
+        if 'UseExistingYes' in request.form:
+            # if real payment -- execute with card
+            return redirect('/checkoutfinish')
+
+        credit_card_num = request.form['CardNumber']
+        card_code = request.form['CardCode']
+        expire_month = request.form['ExpireMonth']
+        expire_year = request.form['ExpireYear']
+        card_type = request.form['CardType']
+
+        insertCard_request(credit_card_num, card_code, expire_month, expire_year, card_type, session.returnUserID())
+        return redirect('/checkoutfinish')
+
+    cards = getCardsOnFile_request(session.returnUserID())
+    returned = 'NULL'
+
+    if cards:
+        returned = ''
+
+    return render_template('checkout.html', cards=cards, returned=returned)
+
+
+def insertCard_request(credit_card_num, card_code, expire_month, expire_year, card_type, email):
+    connection = sql.connect('database.db')
+    connection.execute('INSERT INTO Credit_Cards(credit_card_num, card_code, expire_month, expire_year, card_type, owner_email) VALUES(?, ?, ?, ?, ?, ?)', (credit_card_num, card_code, expire_month, expire_year, card_type, email))
+    connection.commit()
+    connection.close()    
+
+
+def getCardsOnFile_request(email):
+    connection = sql.connect('database.db')
+    cursor = connection.execute('SELECT * FROM Credit_Cards WHERE Credit_Cards.owner_email = ''?'';', (email,))
+    return cursor.fetchall()    
+
+
+@app.route('/checkoutfinish', methods=['GET', 'POST'])
+def checkoutfinish():
 
     if session.returnIsBuyer() == 0:
         return redirect('/')
