@@ -1,9 +1,6 @@
 # *************************************** SETUP GLOBAL
 
-from binascii import Error
-from re import T
-import string
-from unittest import result
+
 from flask import Flask, redirect, render_template, request, url_for
 import sqlite3 as sql
 import csv
@@ -19,8 +16,10 @@ session = Session(0, 0, 0, 0)
 
 # *************************************** END GLOBAL VARS
 
+
 app = Flask(__name__)
 host = 'http://127.0.0.1:5000/'
+
 
 @app.context_processor 
 def inject_dict_for_all_templates():
@@ -73,8 +72,8 @@ def inject_dict_for_all_templates():
         },
         {"text": "Cart", "url": url_for('cart')},
         ]
-    return dict(navbar = nav)
 
+    return dict(navbar = nav)
 
 
 # *************************************** END SETUP
@@ -85,29 +84,55 @@ def inject_dict_for_all_templates():
 def index():
     
     if session.returnIsReady() == 0:
-        initDB() # when starting up re-gen DB 
+        initDB() # when starting up re-gen DB
         session.setIsReady(1)
 
-    #categoriesHierarchy()
-    #generateNav()
-
+    # generate categories menu
+    categories = categoriesHierarchy()
+    catnav = generateNav(categories)
+    
+    # append categories to normal nav func
     products = homeProductListing()
+    return render_template('index.html', products=products, categories=catnav)
 
-    return render_template('index.html', products=products)
+
+def categoriesHierarchy():
+    connection = sql.connect('database.db')
+    cursor = connection.execute('SELECT * FROM Categories')
+    return cursor.fetchall()     
+
+
+# recursive 
+def generateNav(categories):
+    catnav = []
+
+    for category in categories:
+        
+        if category[0] == 'Root': # pass child node to recursive find tail then add back up
+            newRootedBranch = []
+            newRootedBranch = recursiveStem(category, categories, newRootedBranch)
+            catnav.extend([newRootedBranch])
+
+    return catnav
+
+
+def recursiveStem(category, categories, nestedGroup):
+
+    nestedGroup.extend([category[1]])
+    for childCategory in categories:
+
+        if category[1] == childCategory[0]: # if has child
+            childNest = []
+            childNest = recursiveStem(childCategory, categories, childNest)
+            nestedGroup.extend([childNest])
+
+    return nestedGroup
 
 
 def homeProductListing():
     connection = sql.connect('database.db')
     cursor = connection.execute('SELECT * FROM Product_Listings WHERE active <> 0 LIMIT 12;')
     return cursor.fetchall()
-
-
-def categoriesHierarchy():
-    return render_template('index.html') # todo
-
-
-def generateNav():
-    return render_template('index.html') # todo
 
 
 # Create user schema and insert data into users table
@@ -446,6 +471,7 @@ def product():
         listingID = request.form['ListingID']
         product = selectedProduct_request(seller_email, listingID)
         sellerinfo = sellerinfo_request(seller_email)
+
         reviews = productReview_request(seller_email, listingID)
         return render_template('product.html', product=product, len=product[7] + 1, sellerinfo=sellerinfo, reviews=reviews)    
     return render_template('product.html')
@@ -459,7 +485,7 @@ def productReview_request(email, listingID):
 
 def sellerinfo_request(email):
     connection = sql.connect('database.db')
-    cursor = connection.execute('SELECT avg(Ratings.rating) FROM Ratings WHERE Ratings.seller_email = ''?'';', (email,))
+    cursor = connection.execute('SELECT avg(Ratings.rating), * FROM Ratings WHERE Ratings.seller_email = ''?'';', (email,))
     return cursor.fetchone() 
 
 
@@ -505,7 +531,7 @@ def findMaxListingID_request():
 
 def newProduct_request(email, listing_id, title, name, desc, price, quanity, category):
     connection = sql.connect('database.db')
-    connection.execute("INSERT INTO Product_Listings(seller_email, listing_id, category, title, product_name, product_description, price, quanity, active, posted, ended) VALUES(?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'), NULL)", (email, listing_id, category, title, name, desc, price, quanity))
+    connection.execute("INSERT INTO Product_Listings(seller_email, listing_id, category, title, product_name, product_description, price, quanity, active, posted, ended) VALUES(?, ?, ?, ?, ?, ?, ?, ?, 1, date('now'), NULL)", (email, listing_id, category, title, name, desc, price, quanity))
     connection.commit()
     connection.close() 
    
@@ -529,8 +555,45 @@ def listings():
 
 def allSellerListings_request(email):
     connection = sql.connect('database.db')
-    cursor = connection.execute('SELECT Categories.category_name FROM Categories')
-    return cursor.fetchall()      
+    cursor = connection.execute('SELECT * FROM Product_Listings WHERE Product_Listings.seller_email = ''?'' AND Product_Listings.active = 1', (email,))
+    return cursor.fetchall()
+
+
+@app.route('/deactivatelisting', methods=['GET', 'POST'])
+def deactivatelisting():   
+
+    if session.returnIsBuyer() == 0 | session.returnIsSeller() == 0:
+        return redirect('/')             
+
+    if request.method == 'POST':
+        deactivatelisting_request(session.returnUserID(), request.form['listingiD'])
+
+    return redirect('/')
+
+
+def deactivatelisting_request(email, listingID):
+    connection = sql.connect('database.db')
+    connection.execute('Update Product_listings SET active = 0 WHERE Product_listings.seller_email = ''?'' AND Product_listings.listing_id = ''?''', (email, listingID))
+    connection.commit()
+    connection.close()
+
+
+@app.route('/deactivateallListings', methods=['GET', 'POST'])
+def deactivateallListings():
+
+    if session.returnIsBuyer() == 0 | session.returnIsSeller() == 0:
+        return redirect('/')             
+
+    deactivateallListings_request(session.returnUserID())
+
+    return redirect('/')
+
+
+def deactivateallListings_request(email):
+    connection = sql.connect('database.db')
+    connection.execute('Update Product_listings SET active = 0 WHERE Product_listings.seller_email = ''?''', (email,))
+    connection.commit()
+    connection.close()    
 
 
 @app.route('/cart', methods=['GET', 'POST'])
@@ -821,6 +884,137 @@ def reviewProduct_request(buyer_email, seller_email, listing_id, review_desc):
     connection.commit()
     connection.close()
 
+
+@app.route('/sellerprofile', methods=['GET', 'POST'])
+def sellerprofile():
+
+    if request.method == 'POST':
+        selleremail = request.form['Seller_ID']
+        rating = sellerinfo_request(selleremail)
+        ratings = sellerRatings_request(selleremail)
+        reviews = sellerReviews_request(selleremail)
+
+        # is seller vendor?
+        isVendor = isSellerVendor_request(selleremail)
+        if isVendor:
+            return render_template('sellerprofile.html', vendors=isVendor, reviews=selleremail, ratings=ratings, rating=rating)
+
+        isSeller = isSeller_request(selleremail)
+        if isSeller:
+            seller = sellerData_request(selleremail)
+            return render_template('sellerprofile.html', sellers=seller, reviews=reviews, ratings=ratings, rating=rating)           
+
+    return redirect('/')
+
+
+def isSeller_request(email):
+    connection = sql.connect('database.db')
+    cursor = connection.execute('SELECT * FROM Sellers WHERE Sellers.email = ''?'' ;', (email,))
+    return cursor.fetchall()    
+
+
+def isSellerVendor_request(email):
+    connection = sql.connect('database.db')
+    cursor = connection.execute('SELECT * FROM Local_Vendors WHERE Local_Vendors.email = ''?'' ;', (email,))
+    return cursor.fetchall() 
+
+
+def sellerReviews_request(email):
+    connection = sql.connect('database.db')
+    cursor = connection.execute('SELECT * FROM Reviews INNER JOIN Product_Listings ON Reviews.seller_email = ''?'' AND Reviews.listing_id = Product_Listings.listing_id;', (email,))
+    return cursor.fetchall()      
+
+
+def sellerRatings_request(email):
+    connection = sql.connect('database.db')
+    cursor = connection.execute('SELECT * FROM Ratings WHERE Ratings.seller_email = ''?'';', (email,))
+    return cursor.fetchall()  
+
+
+def sellerData_request(email):
+    connection = sql.connect('database.db')
+    cursor = connection.execute('SELECT Buyers.email, Buyers.first_name, Buyers.last_name FROM Buyers WHERE Buyers.email = ''?'';', (email,))
+    return cursor.fetchall()    
+
+
+@app.route('/categoryquery', methods=['GET', 'POST'])
+def categoryquery():
+
+    categories = categoriesHierarchy()
+    catnav = generateNav(categories)
+
+    if request.method == 'GET':
+        level0 = int(request.args.get('level0'))
+        level1 = 'NULL'
+        level2 = 'NULL'
+        products = []
+
+        if 'level1' in request.args:
+            level1 = int(request.args.get('level1'))
+        
+            if 'level2' in request.args:
+                # get specific category
+                level2 = int(request.args.get('level2'))
+                category = catnav[level0][level1][level2]
+                products = temp_products = productsFromCategory_request(category[0])
+
+            else: # get all from level 1 category
+                outcat = catnav[level0][level1]
+                outterprod = productsFromCategory_request(outcat[0])
+                products.extend(outterprod)
+                for subCat in catnav[level0][level1]:
+                    temp_products = productsFromCategory_request(subCat[0])
+                    products.extend(temp_products)
+
+        else: # get all from root category
+            outcat = catnav[level0]
+            outterprod = productsFromCategory_request(outcat[0])
+            products.extend(outterprod)
+            for level1 in catnav[level0]:
+                temp_products = productsFromCategory_request(level1[0])
+                products.extend(temp_products)
+                for level2 in level1:
+                    temp_products = productsFromCategory_request(level2[0])
+                    products.extend(temp_products)
+
+        return render_template('index.html', products=products, categories=catnav)
+
+    return redirect('/')
+
+
+def productsFromCategory_request(category):
+    connection = sql.connect('database.db')
+    cursor = connection.execute('SELECT * FROM Product_Listings WHERE Product_Listings.category = ''?'';', (category,))
+    return cursor.fetchall()
+
+
+@app.route('/search', methods=['GET', 'POST'])
+def search(): 
+
+    if request.method == 'POST':
+        userQuery = request.form['search']
+
+        if not userQuery:
+            return redirect('/')
+
+        products = search_request(userQuery)
+
+        categories = categoriesHierarchy()
+        catnav = generateNav(categories)
+        return render_template('index.html', products=products, categories=catnav)
+
+    return redirect('/')
+
+
+def search_request(sequence):
+    connection = sql.connect('database.db')
+    cursor = connection.execute('SELECT * FROM Product_Listings WHERE Product_Listings.product_name LIKE ''?'' OR Product_Listings.title LIKE ''?'';', (sequence,sequence))
+    return cursor.fetchall()
+
+
+@app.route('/advancedsearch', methods=['GET', 'POST'])
+def advancedsearch(): 
+    return redirect('/')
 
 # default instructions
 if __name__ == "__main__":

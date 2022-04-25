@@ -1,7 +1,15 @@
-### Abstract
+# Nittany Market
+David Rohweder 
+431w Submission
+4-25-2022
 
-This is my Nittany Market early progress submission.
+## This is my Nittany Market early progress submission.
 
-### Bugs and Issues
+## Bugs and Issues
 
-I am currently working on finishing the create account feature since it was not required in the progress report desc.
+### Current
+None at the moment
+
+### Contact
+
+If any bugs arise please contact djr6005@psu.edu for assistance

@@ -43,13 +43,69 @@
 			        <a class="nav-link" href="{{item.url}}">{{item.text}}</a>
 			      </li>
 		      {% endif %}
-		      {% endfor %}
+		      {% endfor %} 
 		      </ul>
 
 		  </div>
 		  
-		  <input type="text" name="search" value="Search">
+		  <form action="/search" method="POST">						
+				<input type="text" name="search">
+				<button type="submit" class="btn btn-primary" style="background-color: orangered;">Search</button>
+			</form>
 		</nav>
+
+		<div style="margin: 0px; padding: 0px; background-color: black; color: black; height: 2px !important; width: 100% important;"></div>
+
+		<div class="navbar navbar-expand-lg navbar-light bg-light">
+			<a class="navbar-brand" href="#">{{config['SITE_TITLE']}}</a>
+			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+			  <span class="navbar-toggler-icon"></span>
+			</button>
+  
+			<div class="collapse navbar-collapse" id="navbarSupportedContent">
+				<ul class="navbar-nav mr-auto">
+					
+					{% set level0_count = namespace(value=0) %}
+			   		{% for level0 in categories %}
+				   	<li class="nav-item dropdown" style="display: flex !important;">
+						<a class="nav-link" href="categoryquery?level0={{ level0_count.value }}" style="display: inline !important; padding-right: 0px;" id="navbarDropdown" role="button" aria-haspopup="true" aria-expanded="false">
+							{{level0[0]}}
+					  	</a>
+						  <a class="nav-link dropdown-toggle dropdown-toggle-split" style="display: inline !important;" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
+						
+					
+						<div class="dropdown-menu" aria-labelledby="navbarDropdown">
+						{% set level1_count = namespace(value=1) %}
+						{% for level1 in level0[1:] %}
+							
+							{% if level1|length == 1 %}
+							<a class="nav-link" href="/categoryquery?level0={{ level0_count.value }}&level1={{ level1_count.value }}" id="navbarDropdown" role="button"  aria-haspopup="true" aria-expanded="false">
+								{{level1[0]}}
+						  	</a>
+							{% else %}	
+							<a class="nav-link dropdown-toggle" href="/categoryquery?level0={{ level0_count.value }}&level1={{ level1_count.value }}" id="navbarDropdown" role="button"  aria-haspopup="true" aria-expanded="false">
+								{{level1[0]}}
+						  	</a>
+							{% endif %}
+
+							{% set level2_count = namespace(value=1) %}
+							{% for level2 in level1[1:] %}
+								<a class='dropdown-item' href="/categoryquery?level0={{ level0_count.value }}&level1={{ level1_count.value }}&level2={{ level2_count.value }}">{{level2[0]}}</a>
+							{% set level2_count.value = level2_count.value + 1 %}
+							{% endfor %}
+
+						{% set level1_count.value = level1_count.value + 1 %}
+						{% endfor %}
+						</div>
+						
+					</li>
+					{% set level0_count.value = level0_count.value + 1 %}
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+
+		<div style="margin: 0px; padding: 0px; background-color: black; color: black; height: 2px !important; width: 100% important;"></div>
 
         <!-- Default intro banner -->
         <div class="banner">
@@ -66,13 +122,13 @@
 					<p class="line">{{ product[4] }}</p>
 					<p class="line">Description: {{ product[5] }}</p>
 					<p class="line">Price: {{ product[6] }}</p>
+					<p class="line">Seller: {{ product[0] }}</p>
+					<p class="line">Category: {{ product[2] }}</p>
 				</button>
 			</form>
 			{% endfor %}
 		</div>
 
-
-        
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 	    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.3/js/bootstrap.bundle.min.js" integrity="sha512-iceXjjbmB2rwoX93Ka6HAHP+B76IY1z0o3h+N1PeDtRSsyeetU3/0QKJqGyPJcX63zysNehggFwMC/bi7dvMig==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 

@@ -9,7 +9,7 @@
         <link rel="shortcut icon" href="/favicon.ico">
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.3/css/bootstrap.min.css" integrity="sha512-oc9+XSs1H243/FRN9Rw62Fn8EtxjEYWHXRvjS43YtueEewbS6ObfXcJNyohjHqVKFPoXXUxwc+q1K7Dee6vv9g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-        <title>NM - Publish Product</title>
+        <title>NM - Listings</title>
     </head>
 
 	<body>
@@ -52,37 +52,34 @@
 
 		<div class="cart-container">
 			<div class="cart-header">
-				<h3 class="cart-heading">Recent Orders</h3>
+				<h3 class="cart-heading">Active Listings</h3>
+				<a href="/deactivateallListings"class="cart-action">Deactivate all listings</a>
 			</div>
   
-			{% for item in orders %}
+			{% for listing in listings %}
 			<div class="cart-items">
 
 				<div class="cart-about">
-					{% set title = item[13] %}
+					{% set title = listing[4] %}
 					<h1 class="cart-title">{{ title[0:12] }}..</h1>
-					<h3 class="cart-subtitle">{{ item[14] }}</h3>
+					<h3 class="cart-subtitle">{{ listing[5] }}</h3>
 				</div>
 
 				<div class="cart-counter">
-					<div class="cart-count">Item Quanity: {{ item[5] }}</div>
+					<div class="cart-count">Item Posted: {{ listing[9] }}</div>
 				</div>
 
 				<div class="cart-prices">
-					<div class="cart-amount">Item Total: {{ item[6] }}</div>
-					<form action="/reviewproduct" method="POST">						
-						<input type="hidden" name="TransactionID" value="{{ item[0] }}">
-						<button type="submit" href="/reviewproduct" class="cart-remove" style="border: 0px !important;"><u>Review Product</u></button>
-					</form>
-					<form action="/rateseller" method="POST">						
-						<input type="hidden" name="TransactionID" value="{{ item[0] }}">
-						<button type="submit" href="/rateseller" class="cart-remove" style="border: 0px !important;"><u>Rate Seller</u></button>
-					</form>		
+					<div class="cart-amount">Listing ID {{ listing[1] }}</div>
+					<form action="/deactivatelisting" method="POST">						
+						<input type="hidden" name="listingiD" value="{{ listing[1] }}">
+						<button type="submit" href="/deactivatelisting" class="cart-remove" style="border: 0px !important;"><u>Deactivate</u></button>
+					</form>	
 				  </div>
 			</div>
 			{% endfor %}
 
-		<hr> 
+		<hr>  
         
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 	    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.3/js/bootstrap.bundle.min.js" integrity="sha512-iceXjjbmB2rwoX93Ka6HAHP+B76IY1z0o3h+N1PeDtRSsyeetU3/0QKJqGyPJcX63zysNehggFwMC/bi7dvMig==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>

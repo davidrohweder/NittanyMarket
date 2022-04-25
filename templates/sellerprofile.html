@@ -9,7 +9,7 @@
         <link rel="shortcut icon" href="/favicon.ico">
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.3/css/bootstrap.min.css" integrity="sha512-oc9+XSs1H243/FRN9Rw62Fn8EtxjEYWHXRvjS43YtueEewbS6ObfXcJNyohjHqVKFPoXXUxwc+q1K7Dee6vv9g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-        <title>NM - Home</title>
+        <title>NM - Seller Profile</title>
     </head>
 
 	<body>
@@ -50,27 +50,86 @@
 		  <li>Search</li>
 		</nav>
 
-        <!-- Default intro banner -->
-        <div class="banner">
-            <h1>Nittany Market</h1>
-        </div>
+		{% for seller in sellers %}
+		<div class="container" style="height:200px !important; float: left !important; margin-left: 40px !important;">
+			<div class="left-column">
+				<!-- Product Description -->
+			    <div class="product-description">
+					<h1 style="margin-bottom: 20px !important;">Seller Profile</h1>
+					<h3 class="cart-heading">Seller Email: {{ seller[0] }}</h3>
+					<h3 class="cart-heading">Seller Name: {{ seller[1] }} {{ seller[2] }} </h3>
+		   		</div>
+			</div>
+		</div>
+		{% endfor %}
 
-        <!-- Product Grid -->
-		<div class="products-grid">
-			{% for product in products %}
-			<form action="/product" method="POST" class="product">
-				<input type="hidden" name="SellerEmail-1" value="{{ product[0] }}">
-				<input type="hidden" name="ListingID" value="{{ product[1] }}">
-				<button type="submit">
-					<p class="line">{{ product[4] }}</p>
-					<p class="line">Description: {{ product[5] }}</p>
-					<p class="line">Price: {{ product[6] }}</p>
-				</button>
-			</form>
+		{% for vendor in vendors %}
+		<div class="container" style="height:200px !important; float: left !important; margin-left: 40px !important;">
+			<div class="left-column">
+				<!-- Product Description -->
+			    <div class="product-description">
+					<h1>Vendor Profile</h1>
+					<h3 class="cart-heading">Vendor Email: {{ vendor[0] }}</h3>
+					<h3 class="cart-heading">Vendor Name: {{ vendor[1] }}</h3>
+					<h3 class="cart-heading">Vendor Phone Number {{ rating[3] }}</h3>
+		   		</div>
+			</div>
+		</div>
+		{% endfor %}
+
+		<hr style="border-top: 3px solid black; float: left !important; margin-left: 40px !important; margin-bottom: 40px !important;">
+
+		<div class="cart-container">
+			<div class="cart-header">
+				<h3 class="cart-heading">Recent Ratings: Average Score {{ rating[0] }}</h3>
+			</div>
+  
+			{% for item in ratings %}
+			<div class="cart-items">
+
+				<div class="cart-about">
+					{% set rating = item[4] %}
+					<h1 class="cart-title">{{ rating[0:12] }}..</h1>
+					<h3 class="cart-subtitle">{{ item[0] }}</h3>
+				</div>
+
+				<div class="cart-counter">
+					<div class="cart-count">Date Rated: {{ item[2] }}</div>
+				</div>
+
+				<div class="cart-prices">
+					<div class="cart-subtitle">Buyer rated {{ item[1]}}: {{ item[3] }}</div>		
+				</div>
+			</div>
 			{% endfor %}
 		</div>
 
+		<hr style="border-top: 3px solid black; float: left !important; margin-left: 40px !important;">
 
+		<div class="cart-container">
+			<div class="cart-header">
+				<h3 class="cart-heading">Recent Product Reviews</h3>
+			</div>
+  
+			{% for item in reviews %}
+			<div class="cart-items">
+
+				<div class="cart-about">
+					{% set rating = item[8] %}
+					<h1 class="cart-title">{{ rating[0:12] }}..</h1>
+					<h3 class="cart-subtitle">{{ item[0] }}</h3>
+				</div>
+
+				<div class="cart-counter">
+					<div class="cart-count">{{ item[7] }}</div>
+				</div>
+
+				<div class="cart-prices">
+					<div class="cart-subtitle">Buyer said: {{ item[3] }}</div>		
+				</div>
+			</div>
+			{% endfor %}
+		</div>
         
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 	    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.3/js/bootstrap.bundle.min.js" integrity="sha512-iceXjjbmB2rwoX93Ka6HAHP+B76IY1z0o3h+N1PeDtRSsyeetU3/0QKJqGyPJcX63zysNehggFwMC/bi7dvMig==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>

@@ -94,10 +94,14 @@
 
 			<div class="left-column">
 				<!-- Product Description -->
-			    <div class="product-description">
-					<span>Seller Information: {{ product[0] }}, Rating: {{ sellerinfo[0] }}</span>
-					<p>Product Description: {{ product[5] }}</p>
-		   		</div>			
+				<form action="/sellerprofile" method="POST">						
+			    	<div class="product-description">
+						<input type="hidden" name="Seller_ID" value="{{ product[0] }}">
+						<span>Seller Information:</span>
+						<button type="submit" href="/sellerprofile" style="border: 0px !important;"><span>{{ product[0] }}, Rating: {{ sellerinfo[0] }}</span></button>
+						<p>Product Description: {{ product[5] }}</p>
+					</div>			
+				</form>	
 			</div>
 			
 		</div>
