@@ -347,21 +347,16 @@ def create_account():
 
         firstname = request.form['FirstName']
         lastname = request.form['LastName']
-
         gender = request.form['Gender'] # combo box todo
-
         age = request.form['Age'] # combo box todo
 
         # create billing and home address
-
-        #hash = random.getrandbits(128)
-        address_id = 'billy'
+        streetNumName = request.form['StreetNumber'] + request.form['StreetName']
+        address_id = hashlib.sha256(streetNumName.encode()).hexdigest()
         addrBill = address_id
         addrHome = address_id
-        createaddress_request(address_id, request.form['ZipCode'], request.form['StreetNumber'], request.form['StreetName'])
-        
-        # for now home addr = bill addr untill a same as checkbox is implemented
-        #addrBill = createaddress(request.form['Zipcode'], request.form['street_num'], request.form['street_name'])
+
+        createaddress_request(address_id, request.form['ZipCode'], request.form['StreetNumber'], request.form['StreetName'])  
 
         createaccount_request(email, password, firstname, lastname, gender, age, addrHome, addrBill)
         return redirect('/login')
@@ -387,7 +382,7 @@ def createaccount_request(email, password, first_name, last_name, gender, age, h
 def account():
     
     if session.returnIsVendor() == 1:
-        return redirect('/') # todo
+        return redirect('/')
 
     if session.returnIsBuyer() == 1:
         personal = personalDetails_request(session.returnUserID(), session.returnHashedPassword())
@@ -436,7 +431,7 @@ def password():
             changePassword_request(newpassword, email)
             return redirect('/login')
         else: 
-            error = "Error: Wrong username of password, please try again." # todo -- not working 
+            error = "Error: Wrong username of password, please try again."
             return render_template('password.html', error=error)
  
     return render_template('password.html', error=error)
@@ -505,7 +500,7 @@ def publishproduct():
         producttitle = request.form['ProductTitle']
         productname = request.form['ProductName']
         productdescription = request.form['ProductDescription']
-        productprice = request.form['ProductPrice']
+        productprice = '$' + request.form['ProductPrice']
         productquanity = request.form['ProductQuanity']
         productcategory = request.form['ProductCategory']
         listing_id = findMaxListingID_request()
@@ -566,9 +561,17 @@ def deactivatelisting():
         return redirect('/')             
 
     if request.method == 'POST':
+        cancelAllOrderCart_request(session.returnUserID(), request.form['listingiD'])
         deactivatelisting_request(session.returnUserID(), request.form['listingiD'])
 
     return redirect('/')
+
+
+def cancelAllOrderCart_request(email, listingID):
+    connection = sql.connect('database.db')
+    connection.execute('Update Orders SET cart = 0, cancelled = 1 WHERE Orders.seller_email = ''?'' AND Orders.listing_id = ''?''', (email, listingID))
+    connection.commit()
+    connection.close()    
 
 
 def deactivatelisting_request(email, listingID):
@@ -584,9 +587,17 @@ def deactivateallListings():
     if session.returnIsBuyer() == 0 | session.returnIsSeller() == 0:
         return redirect('/')             
 
+    cancelAllSellerOrderCart_request(session.returnUserID())
     deactivateallListings_request(session.returnUserID())
 
     return redirect('/')
+
+
+def cancelAllSellerOrderCart_request(email):
+    connection = sql.connect('database.db')
+    connection.execute('Update Orders SET cart = 0, cancelled = 1 WHERE Orders.seller_email = ''?''', (email,))
+    connection.commit()
+    connection.close()  
 
 
 def deactivateallListings_request(email):
@@ -640,7 +651,7 @@ def totalCartItems_request(buyer_email):
 
 def cartTotalPrice_request(buyer_email):
     connection = sql.connect('database.db')
-    cursor = connection.execute('SELECT sum(Orders.payment) FROM Orders WHERE Orders.buyer_email = ''?'' AND Orders.cart = 1;', (buyer_email,))
+    cursor = connection.execute('SELECT sum(Orders.payment) FROM Orders WHERE Orders.buyer_email = ''?'' AND Orders.cart = 1 AND Orders.cancelled = 0;', (buyer_email,))
     return cursor.fetchone() 
 
 
@@ -984,7 +995,7 @@ def categoryquery():
 
 def productsFromCategory_request(category):
     connection = sql.connect('database.db')
-    cursor = connection.execute('SELECT * FROM Product_Listings WHERE Product_Listings.category = ''?'';', (category,))
+    cursor = connection.execute('SELECT * FROM Product_Listings WHERE Product_Listings.category = ''?'' AND Product_Listings.active = 1;', (category,))
     return cursor.fetchall()
 
 
@@ -993,6 +1004,9 @@ def search():
 
     if request.method == 'POST':
         userQuery = request.form['search']
+
+        if len(userQuery) < 4:
+            return redirect('/')
 
         if not userQuery:
             return redirect('/')
@@ -1011,7 +1025,7 @@ def search():
 
 def search_request(sequence):
     connection = sql.connect('database.db')
-    cursor = connection.execute('SELECT * FROM Product_Listings WHERE Product_Listings.product_name LIKE ''?'' OR Product_Listings.title LIKE ''?'';', (sequence,sequence))
+    cursor = connection.execute('SELECT * FROM Product_Listings WHERE (Product_Listings.product_name LIKE ''?'' OR Product_Listings.title LIKE ''?'') AND Product_Listings.active = 1;', (sequence,sequence))
     return cursor.fetchall()
 
 

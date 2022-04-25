@@ -91,14 +91,25 @@
                     </div>
                     <div class="form-group">
                         <label id="Gender">Gender</label>
-                        <input type="text" name="Gender" required class="form-control">
+                        <select name="Gender" class="form-control">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Non-binary">Non-binary</option>
+                            <option value="Genderqueer">Genderqueer</option> 
+                            <option value="Genderfluid">Genderfluid</option>
+                            <option value="Agender">Agender</option> 
+                        </select>
                     </div>
                     <div class="form-group">
                         <label id="Age">Age</label>
-                        <input type="text" name="Age" required class="form-control">
+                        <select name="Age" class="form-control">
+                            {% for i in range(18, 100) %}
+                            <option value={{i}}>{{ i }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
 
-                    <h3 class="card-title">Billing Address and Home Address (Temp)</h3>
+                    <h3 class="card-title">Billing Address and Home Address</h3>
 
                     <div class="form-group">
                         <label id="ZipCode">Zip Code</label>

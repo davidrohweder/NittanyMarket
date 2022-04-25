@@ -3,7 +3,7 @@ David Rohweder
 431w Submission
 4-25-2022
 
-## This is my Nittany Market early progress submission.
+## This is my Nittany Market submission.
 
 ### Usage
 
